@@ -415,13 +415,27 @@ class MAX7219_Matrix
 }
 
 
-local thematrix = MAX7219_Matrix(hardware.pin9, hardware.pin7, hardware.pin8, 1, 0);
+local thematrix = MAX7219_Matrix(hardware.pin9, hardware.pin7, hardware.pin8, 0, 0);
+
+function delay(value)
+  {
+	// Delay for ‘value’ milliseconds
+    
+	local a = hardware.millis() + value;
+    
+	while (hardware.millis() < a)
+	{
+		// NOP
+	}
+}
 
 function led_print(message_to_display)
 {
   thematrix.display_line(message_to_display);
+  delay(500);
+  thematrix.clear_display();
   agent.send("ack", 1);
-  //imp.wakeup( 15.0, thematrix.clear_display() );
+  //imp.wakeup(5.0, thematrix.clear_display());
 }
 
 function test() 
@@ -433,6 +447,7 @@ function test()
 }
 
 thematrix.init();
+thematrix.clear_display();
 //test();
 agent.on("message", led_print);
 
