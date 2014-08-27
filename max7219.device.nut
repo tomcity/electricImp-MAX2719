@@ -413,3 +413,28 @@ class MAX7219_Matrix
 		return output_matrix;
 	}
 }
+
+
+local thematrix = MAX7219_Matrix(hardware.pin9, hardware.pin7, hardware.pin8, 1, 0);
+
+function led_print(message_to_display)
+{
+  thematrix.display_line(message_to_display);
+  agent.send("ack", 1);
+  //imp.wakeup( 15.0, thematrix.clear_display() );
+}
+
+function test() 
+{
+  thematrix.charnum(95);
+  //thematrix.display_char(127);
+  //thematrix.display_icon();
+  imp.wakeup(1.0, loop);
+}
+
+thematrix.init();
+//test();
+agent.on("message", led_print);
+
+server.log("Device started [ version: " + imp.getsoftwareversion() + " ]");
+server.log("RSSI: " + imp.rssi() + "dBm | SSID: " + imp.getssid() + " | BBSID: " + imp.getbssid() + " | MAC-IMP: " + imp.getmacaddress() + " | FREE MEM: " + imp.getmemoryfree() + " bytes" );
