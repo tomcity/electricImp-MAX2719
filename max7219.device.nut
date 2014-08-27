@@ -15,7 +15,7 @@ class MAX7219_Matrix
 	static MAX7219_REGISTER_TEST_MODE = 0x0F
     
 	// Constants for the alphanumeric character set
-	static alpha_count = 95;
+	
 	static charset = [
 	[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00],	// Space - Ascii 32
 	[0x00,0x10,0x10,0x10,0x10,0x00,0x10,0x00],	// !
@@ -77,7 +77,7 @@ class MAX7219_Matrix
 	[0x00,0x44,0x28,0x10,0x10,0x10,0x10,0x00],	// Y
 	[0x00,0x7E,0x04,0x08,0x10,0x20,0x7E,0x00],	// Z - Ascii 90
 	[0x00,0x0E,0x08,0x08,0x08,0x08,0x0E,0x00],	// [
-	[0x00,0x00,0x40,0x20,0x10,0x08,0x04,0x00],	// 
+	[0x00,0x00,0x40,0x20,0x10,0x08,0x04,0x00],	// \
 	[0x00,0x70,0x10,0x10,0x10,0x10,0x70,0x00],	// ]
 	[0x00,0x10,0x38,0x54,0x10,0x10,0x10,0x00],	// ^
 	[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xFF],	// _
@@ -95,7 +95,7 @@ class MAX7219_Matrix
 	[0x00,0x40,0x50,0x60,0x60,0x50,0x48,0x00],	// k
 	[0x00,0x40,0x40,0x40,0x40,0x40,0x30,0x00],	// l
 	[0x00,0x00,0x68,0x54,0x54,0x54,0x54,0x00],	// m
-	[0x00,0x00,0x78,0x44,0x44,0x44,0x44,0x00],  // n
+	[0x00,0x00,0x78,0x44,0x44,0x44,0x44,0x00],    	// n
 	[0x00,0x00,0x38,0x44,0x44,0x44,0x38,0x00],	// o
 	[0x00,0x78,0x44,0x44,0x78,0x40,0x40,0x00],	// p
 	[0x00,0x3C,0x44,0x44,0x3C,0x04,0x06,0x00],	// q
@@ -127,13 +127,14 @@ class MAX7219_Matrix
 	]
 	
 	// Zero Class properties ahead of Class constructor function
+    
 	_led_clk = null
 	_led_din = null
 	_led_cs = null
 	inverse_video_flag = false
 	rotate_matrix_flag = false
- 
-	constructor(clock_pin, data_pin, select_pin, should_rotate = false, is_inverse = false)
+
+	constructor(clock_pin, data_pin, select_pin, is_inverse=false, should_rotate = false)
 	{
 		// Parameters:
 		// 1. imp pin object to handle clock signals
@@ -141,20 +142,23 @@ class MAX7219_Matrix
 		// 3. imp pin object to handle chip selection
 		// 4. Boolean value governing matrix rotation, which depends on the
 		//    orientation of your 8 x 8 matrix. Default: no rotation
+		
 		_led_clk = clock_pin;
 		_led_din = data_pin;
 		_led_cs = select_pin;
         	
 		// Set these pins as digital outputs
+
 		_led_clk.configure(DIGITAL_OUT);
 		_led_cs.configure(DIGITAL_OUT);
 		_led_din.configure(DIGITAL_OUT);
 		
 		// Set screen rotation flag
-		rotate_matrix_flag = should_rotate;
+		
 		inverse_video_flag = is_inverse;
+		rotate_matrix_flag = should_rotate;
 	}
- 
+
 	function write_LED_byte(byte_value) 
 	{   
 		// Writes a single byte of data to the MAX7219 display controller one bit at a time.
@@ -169,41 +173,44 @@ class MAX7219_Matrix
 			_led_clk.write(1);
 		}                                 
 	}
- 
+
 	function write_LED(RegisterAddress, value)
 	{
 		// Writes a single value to the MAX7219, preceded by the register
 		// it is being written to	
+
 		_led_cs.write(0);
 		write_LED_byte(RegisterAddress);
 		write_LED_byte(value);
 		_led_cs.write(1);
 	}
- 
+
 	function init()
 	{
 		// Initialise the MAX7219’s parameter registers by writing
 		// the register’s address followed by its 8-bit value
 		// Address and data values from the Maxim Integrated MAX7219 Datasheet:
 		// http://www.maximintegrated.com/datasheet/index.mvp/id/1339
+	
 		write_LED(MAX7219_REGISTER_BCD, 0x00)		// Set MAX7219’s BCD decode mode to ‘none’
 		write_LED(MAX7219_REGISTER_BRIGHT, 0x01)	// Set MAX7219’s LED intensity to a 2/32 duty cycle
 		write_LED(MAX7219_REGISTER_SCAN, 0x07)		// Set MAX7219’s scan limit to all eight LED columns
 		write_LED(MAX7219_REGISTER_PWR_MODE, 0x01)	// Set MAX7219’s power mode. 0 = power down, 1 = normal
 		write_LED(MAX7219_REGISTER_TEST_MODE, 0x00)	// Set MAX7219’s display test mode off
 	}
-	
+
 	function clear_display()
 	{
 		display_line(" ");
 	}
-	
+
 	function display_icon(input_matrix = [0xFF, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0xFF])
 	{
 		// Display a custom 8 x 8 character bitmap
 		// Parameter(s)
 		// 1. Array of eight 8-bit integer values as the character bit pattern
 		//    Default: a graphic
+		
 		input_matrix = rotate_matrix(input_matrix);
 		for (local k = 0 ; k < 8 ; k++)
 		{
@@ -217,12 +224,13 @@ class MAX7219_Matrix
 			}
 		}
 	}
- 
-	function display_char(ascii_value = 36)
+
+	function display_char(ascii_value = 32)
 	{
 		// Display a character specified by its Ascii value
 		// Parameter(s)
 		// 1. Integer Ascii value, default: 32 (space)
+		
 		ascii_value = ascii_value - 32;
 		if (ascii_value < 0 || ascii_value > alpha_count) ascii_value = 0;
 		
@@ -241,13 +249,14 @@ class MAX7219_Matrix
 			}
 		}
 	}
- 
+
 	function display_line(line = "No text entered")
 	{
 		// Display a text string character by character, bit-scrolling
 		// from one to the next
 		// Parameter(s):
 		// 1. String of characters, default: "No text entered"
+		
 		if (line == "") return
 		
 		local a = 0;
@@ -356,6 +365,21 @@ class MAX7219_Matrix
 		imp.sleep(0.04);
 	}
 	
+	function display_charnum(char_num = 18)
+	{
+		local input_matrix = [0,0,0,0,0,0,0,0];
+    		input_matrix = rotate_matrix(charset[char_num]);
+    
+    		for (local k = 0 ; k < 8 ; k++) {
+      			if (inverse_video_flag == 1) {
+        			write_LED(k+1, ~input_matrix[k]);
+      			} else {
+        			write_LED(k+1, input_matrix[k]);
+        		}
+    		}
+    
+  	}
+
 	function rotate_matrix(input_matrix)
 	{
 		// Rotate an 8 x 8 character bitmap matrix to reflect orientation of LEDs
@@ -388,39 +412,4 @@ class MAX7219_Matrix
     
 		return output_matrix;
 	}
-	
-	function charnum(char_num = 18)
-	{
-    //write_LED(0x0c,0x01);
-    
-  	local input_matrix = [0,0,0,0,0,0,0,0];
-    input_matrix = rotate_matrix(charset[char_num]);
-    
-    for (local k = 0 ; k < 8 ; k++) {
-      if (inverse_video_flag == 1) {
-        write_LED(k+1, ~input_matrix[k]);
-      } else {
-        write_LED(k+1, input_matrix[k]);
-      }
-    }
-    
-    //delay(5000);
-    //write_LED(0x0c,0x00);
-    //imp.wakeup(2.0, test);
-  }
-  
-  function testum2(ascii_value = 32)
-	{
-    ascii_value = ascii_value - 32;
-		if (ascii_value < 0 || ascii_value > alpha_count) ascii_value = 0;
-		
-		local input_matrix = clone(charset[ascii_value]);
-		input_matrix = rotate_matrix(input_matrix);
-		
-		for (local k = 0 ; k < 8 ; k++)
-		{
-		  //write_LED(k+1, ~input_matrix[k]);
-		  write_LED(k+1, input_matrix[k]);
-		}
-  }
 }
