@@ -440,10 +440,12 @@ function led_print(message_to_display)
 
 function test() 
 {
-  thematrix.charnum(95);
+  //thematrix.charnum(95);
   //thematrix.display_char(127);
-  //thematrix.display_icon();
-  imp.wakeup(1.0, loop);
+  thematrix.display_icon( [0xff,0x81,0xbd,0xa5,0xa5,0xbd,0x81,0xff] );
+  //thematrix.clear_display();
+  //thematrix.display_line("Hello World");
+  imp.wakeup(1.0, test);
 }
 
 thematrix.init();
